@@ -7,11 +7,11 @@ remove = "Предложения по документу"
 glava_check = "Глава"
 razdel_check = "РАЗДЕЛ"
 
-# link = 'https://lex.uz/ru/docs/6257291'
+# link = 'https://lex.uz/ru/docs/6257291' /trudovoy_kodeks
 # link = 'https://lex.uz/en/docs/6130752' # small pp
 
 # links = ['https://lex.uz/ru/docs/5382983', 'https://lex.uz/docs/6445147', 'https://www.lex.uz/docs/7285847', 'https://www.lex.uz/docs/6835332']
-links = ['https://lex.uz/ru/docs/5382983']
+links = ['https://lex.uz/ru/docs/6257291']
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
@@ -25,7 +25,6 @@ def main():
         doc_date = soup.find('div', class_='docHeader__item-value').get_text().strip()
 
         main_box = soup.find('div', class_="docBody__container")
-
         act_title = main_box.find('div', class_='ACT_TITLE').find('a').get_text().strip()
 
         div_cont = main_box.find('div', id='divCont')
@@ -43,14 +42,16 @@ def main():
 
         for idx, div in enumerate(div_list):
             if div.has_attr('class'):
+                for span in div.find_all('span', class_='lx_elem2'):
+                    span.decompose()
                 if 'TEXT_HEADER_DEFAULT' in div['class']:
-                    text_header = div.find('a').get_text().strip()
+                    text_header = div.get_text().strip()
                     if razdel_check in text_header:
                         razdel_text = text_header
                     if glava_check in text_header:
                         glava_text = text_header
                 elif 'CLAUSE_DEFAULT' in div['class']:
-                    clause_header = div.find('a').get_text().strip()
+                    clause_header = div.get_text().strip()
                     content = ""
                 elif 'ACT_TEXT' in div['class']:
                     if glava_text == text_header or glava_text == "":
@@ -61,10 +62,7 @@ def main():
                     if razdel_text != "":
                         topic_text = f'{razdel_text}. {topic_text}'
 
-                    act_text =  f'{div.find("a").get_text().strip()}'
-                    
-                    if 'возможность в случаях, установленных настоящим Кодексом или иным законом, предусматривать в трудовом договоре дополнительные основания его прекращения.' in act_text:
-                        print('here')
+                    act_text = div.get_text().strip()
                     
                     if check_if_list(act_text):
                         content = content + " " + act_text
@@ -81,21 +79,21 @@ def main():
                     elif not is_list:
                         content = content + " " + act_text
                 
-                    next_act_condition = idx + 1 < len(div_list) and \
-                        'ACT_TEXT' in div_list[idx + 1]['class'] and check_if_list_head(f'{div_list[idx + 1].find("a").get_text().strip()}')
-                    next_clause_condition = idx + 1 < len(div_list) and 'CLAUSE_DEFAULT' in div_list[idx + 1]['class']
-                    next_header_condition = idx + 1 < len(div_list) and 'TEXT_HEADER_DEFAULT' in div_list[idx + 1]['class']
-                    curr_prev_act_condition = 'ACT_TEXT' in div_list[idx - 1]['class'] and \
-                        check_if_list(f'{div_list[idx - 1].find("a").get_text().strip()}') and not check_if_list(act_text) and not check_if_list_head(act_text)
+                    # next_act_condition = idx + 1 < len(div_list) and \
+                    #     'ACT_TEXT' in div_list[idx + 1]['class'] and check_if_list_head(f'{div_list[idx + 1].find("a").get_text().strip()}')
+                    # next_clause_condition = idx + 1 < len(div_list) and 'CLAUSE_DEFAULT' in div_list[idx + 1]['class']
+                    # next_header_condition = idx + 1 < len(div_list) and 'TEXT_HEADER_DEFAULT' in div_list[idx + 1]['class']
+                    # curr_prev_act_condition = 'ACT_TEXT' in div_list[idx - 1]['class'] and \
+                    #     check_if_list(f'{div_list[idx - 1].find("a").get_text().strip()}') and not check_if_list(act_text) and not check_if_list_head(act_text)
                     
-                    if next_header_condition or next_clause_condition or next_act_condition or curr_prev_act_condition:
-                        header_list.append({
-                            'topic': topic_text,
-                            'content': content.strip(),
-                            'lawId': doc_date,
-                            'lawName': act_title,
-                        }) 
-                        content = ""
+                    # if next_header_condition or next_clause_condition or next_act_condition or curr_prev_act_condition:
+                    header_list.append({
+                        'topic': topic_text,
+                        'content': content.strip(),
+                        'lawId': doc_date,
+                        'lawName': act_title,
+                    }) 
+                    content = ""
                     
 
         header_list.append({
