@@ -171,3 +171,4 @@ cython_debug/
 .pypirc
 
 *[А-яЁё]*
+*_result.json

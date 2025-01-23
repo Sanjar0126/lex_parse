@@ -109,9 +109,9 @@ def main():
         
         file_title = act_title.replace(" ", "_").replace("/", "_").replace(".", "_")
 
-        print(f'saving {file_title}_{file_count}.json')
+        print(f'saving {file_title}_{file_count}_result.json')
 
-        with open(f'{file_title}_{file_count}.json', 'w', encoding='utf-8') as f:
+        with open(f'{file_title}_{file_count}_result.json', 'w', encoding='utf-8') as f:
             json.dump(final_list, f, ensure_ascii=False, indent=4)
 
 def check_if_list_head(text):
